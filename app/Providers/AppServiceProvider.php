@@ -13,7 +13,6 @@ use App\Output\Processor\LogFileProcessor;
 use App\Output\Processor\StdoutProcessor;
 use App\Spatie\Adapter\SpatieCrawlerAdapter;
 use App\Contract\WebCrawler;
-use App\Spatie\Collection\CrawlObserverCollection;
 use App\Spatie\Observer\RecordWriterObserver;
 use GuzzleHttp\Client;
 use Illuminate\Support\ServiceProvider;

@@ -6,7 +6,6 @@ use App\Collection\OutputFilterCollection;
 use App\Collection\OutputProcessorCollection;
 use App\Entity\Simple\CrawlData;
 use App\Output\Filter\OutputFilter;
-use App\Output\Processor\OutputProcessor;
 
 class OutputContext
 {

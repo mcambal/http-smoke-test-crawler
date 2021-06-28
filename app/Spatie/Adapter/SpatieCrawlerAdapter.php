@@ -2,8 +2,8 @@
 
 namespace App\Spatie\Adapter;
 
-use App\Entity\Simple\CrawlerConfiguration;
 use App\Contract\WebCrawler;
+use App\Entity\Simple\CrawlerConfiguration;
 use App\Output\Context\OutputContext;
 use App\Spatie\Strategy\ObserverWithOutputContext;
 use Spatie\Crawler\Crawler;

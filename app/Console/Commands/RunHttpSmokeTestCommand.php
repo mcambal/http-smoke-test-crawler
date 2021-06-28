@@ -57,31 +57,31 @@ class RunHttpSmokeTestCommand extends Command
         $crawlConfiguration = new CrawlerConfiguration();
 
         $delayBetweenRequests = $this->option('delayBetweenRequests');
-        if($delayBetweenRequests !== null) {
+        if ($delayBetweenRequests !== null) {
             $crawlConfiguration->setDelayBetweenRequests($delayBetweenRequests);
         }
 
-        $crawlConfiguration->setRespectRobots((bool) $this->option('respectRobots'));
+        $crawlConfiguration->setRespectRobots((bool)$this->option('respectRobots'));
         $crawlConfiguration->setRejectNoFollowLinks($this->option('rejectNoFollowLinks'));
 
 
         $userAgent = $this->option('userAgent');
-        if(!empty($userAgent)) {
+        if (!empty($userAgent)) {
             $crawlConfiguration->setUserAgent($userAgent);
         }
 
         $maxCrawlCount = $this->option('maxCrawlCount');
-        if(!empty($maxCrawlCount)) {
+        if (!empty($maxCrawlCount)) {
             $crawlConfiguration->setMaximumCrawlCount($maxCrawlCount);
         }
 
         $maxCrawlDepth = $this->option('maxCrawlDepth');
-        if(!empty($maxCrawlDepth)) {
+        if (!empty($maxCrawlDepth)) {
             $crawlConfiguration->setMaximumCrawlDepth($maxCrawlDepth);
         }
 
         $maxResponseSize = $this->option('maxResponseSize');
-        if(!empty($maxResponseSize)) {
+        if (!empty($maxResponseSize)) {
             $crawlConfiguration->setMaximumResponseSize($maxResponseSize);
         }
 

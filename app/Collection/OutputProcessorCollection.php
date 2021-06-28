@@ -28,7 +28,7 @@ class OutputProcessorCollection
      */
     public function getByType(string $type): array
     {
-        if(!isset($this->outputProcessors[$type])) {
+        if (!isset($this->outputProcessors[$type])) {
             throw new UnableToFindOutputTypeException($type);
         }
 

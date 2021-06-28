@@ -35,7 +35,8 @@ class OutputConfiguration
     /**
      * @return array|string[]
      */
-    public function getOutputFilters(): array {
+    public function getOutputFilters(): array
+    {
         return $this->outputFilters;
     }
 }

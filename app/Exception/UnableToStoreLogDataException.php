@@ -10,6 +10,6 @@ class UnableToStoreLogDataException extends \Exception
      */
     public function __construct(string $logFile)
     {
-        parent::__construct('Unable to store data to log file (' . $logFile .')');
+        parent::__construct('Unable to store data to log file (' . $logFile . ')');
     }
 }

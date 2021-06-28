@@ -22,7 +22,8 @@ class LogFileProcessor implements OutputProcessor
      * @param string $filePath
      * @param OutputFormatter $outputFormatter
      */
-    public function __construct(string $filePath, OutputFormatter $outputFormatter) {
+    public function __construct(string $filePath, OutputFormatter $outputFormatter)
+    {
         $this->filePath = $filePath;
         $this->outputFormatter = $outputFormatter;
     }
@@ -33,7 +34,7 @@ class LogFileProcessor implements OutputProcessor
      */
     public function write(CrawlData $crawlData): void
     {
-        if(!file_put_contents(
+        if (!file_put_contents(
             $this->filePath,
             $this->outputFormatter->format(
                 $crawlData->getTargetUrl(),

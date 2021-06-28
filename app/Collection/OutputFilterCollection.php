@@ -28,7 +28,7 @@ class OutputFilterCollection
      */
     public function get(string $name): OutputFilter
     {
-        if(!isset($this->outputFilters[$name])) {
+        if (!isset($this->outputFilters[$name])) {
             throw new UnableToFindOutputFilterException($name);
         }
 

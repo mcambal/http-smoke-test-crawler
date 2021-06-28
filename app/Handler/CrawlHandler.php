@@ -2,8 +2,8 @@
 
 namespace App\Handler;
 
-use App\Entity\Simple\CrawlerConfiguration;
 use App\Contract\WebCrawler;
+use App\Entity\Simple\CrawlerConfiguration;
 use App\Entity\Simple\OutputConfiguration;
 use App\Output\Context\OutputContext;
 

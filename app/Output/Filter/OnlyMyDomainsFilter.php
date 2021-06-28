@@ -43,8 +43,8 @@ class OnlyMyDomainsFilter implements OutputFilter
      */
     public function shouldBeProcessed(CrawlData $crawlData): bool
     {
-        foreach($this->expectedDomains as $domain) {
-            if(preg_match('/^http(s)?:\/\/' . $domain . '/', $crawlData->getTargetUrl())) {
+        foreach ($this->expectedDomains as $domain) {
+            if (preg_match('/^http(s)?:\/\/' . $domain . '/', $crawlData->getTargetUrl())) {
                 return true;
             }
         }
