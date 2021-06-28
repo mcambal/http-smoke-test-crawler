@@ -14,7 +14,7 @@ php artisan run:smoke-test <url> <options>
 |--maxCrawlCount| any integer greater than 0 |
 |--maxCrawlDepth| any integer greater than 0 |
 |--maxResponseSize| any integer greater than 0 |
-|--filters|Comma separated list of available filters. Currently possible value is **InvalidStatusCodes** |
+|--filters|Comma separated list of available filters. Possible values are **InvalidStatusCodes** or **OnlyMyDomains** |
 
 Example commands:
 ```php
@@ -25,5 +25,5 @@ php artisan run:smoke-test https://datasecurityguide.eset.com --output=file
 # Prints all crawled urls to stdout and override user-agent string
 php artisan run:smoke-test https://datasecurityguide.eset.com --userAgent="SpamBot 1.0"
 # Prints only invalid requests to stdout
-php artisan run:smoke-test https://datasecurityguide.eset.com --filters=InvalidStatusCodes
+php artisan run:smoke-test https://datasecurityguide.eset.com --filters=InvalidStatusCodes,OnlyMyDomains
 ```

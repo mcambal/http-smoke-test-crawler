@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Collection\OutputFilterCollection;
 use App\Collection\OutputProcessorCollection;
+use App\Output\Filter\OnlyMyDomainsFilter;
 use App\Output\Processor\DotProcessor;
 use App\Output\Filter\StatusCodeFilter;
 use App\Output\Formatter\LogFormatter;
@@ -43,14 +44,22 @@ class AppServiceProvider extends ServiceProvider
         $outputFilterCollection->add('InvalidStatusCodes',
             $this->app->make(StatusCodeFilter::class, [
                 'expectedStatusCodes' => [301,302,307,308,404,403,500,502,503,504],
-                'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]])
+                'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]
+                ]
+            )
+        );
+        $outputFilterCollection->add('OnlyMyDomains',
+            $this->app->make(OnlyMyDomainsFilter::class, [
+                'expectedDomains' => ['[a-z]+\.eset\.com'],
+                'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]
+                ]
+            )
         );
 
         $this->app->instance(OutputFilterCollection::class, $outputFilterCollection);
 
         $datetime = new \DateTime();
         $outputProcessorCollection = new OutputProcessorCollection();
-
         $outputProcessorCollection->add('stdout', $this->app->make(StdoutProcessor::class));
         $outputProcessorCollection->add('file', $this->app->make(DotProcessor::class));
         $outputProcessorCollection->add('file', $this->app->make(LogFileProcessor::class, ['filePath' => './storage/logs/urls' . $datetime->format('-Y-m-d_H:00:00') . '.log']));

@@ -64,27 +64,29 @@ class OutputContext
     public function write(CrawlData $crawlData): void
     {
         foreach ($this->selectedOutputProcessors as $outputProcessor) {
-            $this->filterData($crawlData, $outputProcessor);
+            if($this->shouldProcessData($crawlData)) {
+                $outputProcessor->write($crawlData);
+            }
         }
     }
 
     /**
      * @param CrawlData $crawlData
-     * @param OutputProcessor $outputProcessor
+     * @return bool
      */
-    private function filterData(CrawlData $crawlData, OutputProcessor $outputProcessor): void {
+    private function shouldProcessData(CrawlData $crawlData): bool {
 
         if(empty($this->selectedOutputFilters)) {
-            $outputProcessor->write($crawlData);
-
-            return ;
+            return true;
         }
 
         /** @var OutputFilter $outputFilter */
         foreach($this->selectedOutputFilters as $outputFilter) {
-            if(false === $outputFilter->supportsProcessor($outputProcessor) || $outputFilter->shouldBeProcessed($crawlData)) {
-                $outputProcessor->write($crawlData);
+            if(false === $outputFilter->shouldBeProcessed($crawlData)) {
+                return false;
             }
         }
+
+        return true;
     }
 }
