@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OutputFormatter::class, LogFormatter::class);
 
         $outputFilterCollection = new OutputFilterCollection();
-        $outputFilterCollection->add('invalidStatusCodes',
+        $outputFilterCollection->add('InvalidStatusCodes',
             $this->app->make(StatusCodeFilter::class, [
                 'expectedStatusCodes' => [301,302,307,308,404,403,500,502,503,504],
                 'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]])

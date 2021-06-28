@@ -62,6 +62,10 @@ class CrawlerConfiguration
      */
     public function setDelayBetweenRequests(int $delayBetweenRequests): void
     {
+        if($delayBetweenRequests < 0) {
+            throw new \InvalidArgumentException('Deplay between requests can\'t be lower than 0s');
+        }
+
         $this->delayBetweenRequests = $delayBetweenRequests;
     }
 
@@ -110,6 +114,10 @@ class CrawlerConfiguration
      */
     public function setMaximumResponseSize(int $maximumResponseSize): void
     {
+        if($maximumResponseSize <= 0) {
+            throw new \InvalidArgumentException('Maximum response size must be greater than 0');
+        }
+
         $this->maximumResponseSize = $maximumResponseSize;
     }
 
@@ -126,6 +134,10 @@ class CrawlerConfiguration
      */
     public function setMaximumCrawlCount(int $maximumCrawlCount): void
     {
+        if($maximumCrawlCount <= 0) {
+            throw new \InvalidArgumentException('Maximum crawl count must be greater than 0');
+        }
+
         $this->maximumCrawlCount = $maximumCrawlCount;
     }
 
@@ -137,11 +149,16 @@ class CrawlerConfiguration
         return $this->maximumCrawlDepth;
     }
 
+
     /**
      * @param int $maximumCrawlDepth
      */
     public function setMaximumCrawlDepth(int $maximumCrawlDepth): void
     {
+        if($maximumCrawlDepth <= 0) {
+            throw new \InvalidArgumentException('Maximum crawl depth must be greater than 0');
+        }
+
         $this->maximumCrawlDepth = $maximumCrawlDepth;
     }
 }
