@@ -4,7 +4,12 @@ namespace App\Providers;
 
 use App\Collection\OutputFilterCollection;
 use App\Collection\OutputProcessorCollection;
+use App\Contract\Mailer;
+use App\Illuminate\Adapter\MailerAdapter;
 use App\Output\Filter\OnlyMyDomainsFilter;
+use App\Output\Formatter\CsvFormatter;
+use App\Output\Processor\Generator\BasicFileNameGenerator;
+use App\Output\Processor\Generator\FileNameGenerator;
 use App\Output\Processor\DotProcessor;
 use App\Output\Filter\StatusCodeFilter;
 use App\Output\Formatter\LogFormatter;
@@ -38,6 +43,29 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->app->bind(OutputFormatter::class, LogFormatter::class);
+        $this->app->bind(FileNameGenerator::class, BasicFileNameGenerator::class);
+
+        /*$smtpTransport = new \Swift_SmtpTransport(config('mail.host'), config('mail.port'), config('mail.encryption'));
+        $smtpTransport->setUsername(config('mail.username'));
+        $smtpTransport->setPassword(config('mail.password'));
+
+        $this->app->instance(\Swift_Transport::class, $smtpTransport);
+
+        $mailer = $this->app->make(\Illuminate\Mail\Mailer::class, ['swift' => $this->app->make(\Swift_Mailer::class)]);
+
+        $this->app->instance(MailerAdapter::class, $this->app->make(MailerAdapter::class, ['mailer' => $mailer]));
+*/
+        $this->app->bind(Mailer::class, MailerAdapter::class);
+
+        $this->app->instance(BasicFileNameGenerator::class,
+            $this->app->make(BasicFileNameGenerator::class,
+                [
+                    'directoryPath' => './storage/logs',
+                    'baseName' => 'urls',
+                    'fileExtension' => 'log'
+                ]
+            )
+        );
 
         $outputFilterCollection = new OutputFilterCollection();
         $outputFilterCollection->add('InvalidStatusCodes',
@@ -57,11 +85,22 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->instance(OutputFilterCollection::class, $outputFilterCollection);
 
-        $datetime = new \DateTime();
         $outputProcessorCollection = new OutputProcessorCollection();
         $outputProcessorCollection->add('stdout', $this->app->make(StdoutProcessor::class));
-        $outputProcessorCollection->add('file', $this->app->make(DotProcessor::class));
-        $outputProcessorCollection->add('file', $this->app->make(LogFileProcessor::class, ['filePath' => './storage/logs/urls' . $datetime->format('-Y-m-d_H:00:00') . '.log']));
+        $outputProcessorCollection->add('logFile', $this->app->make(DotProcessor::class));
+        $outputProcessorCollection->add('logFile', $this->app->make(LogFileProcessor::class));
+        $outputProcessorCollection->add('csvFile', $this->app->make(DotProcessor::class));
+        $outputProcessorCollection->add('csvFile', $this->app->make(LogFileProcessor::class,
+                [
+                    'nameGenerator' => $this->app->make(BasicFileNameGenerator::class, [
+                        'directoryPath' => './storage/logs',
+                        'baseName' => 'urls',
+                        'fileExtension' => 'csv'
+                    ]),
+                    'outputFormatter' => $this->app->make(CsvFormatter::class)
+                ]
+            )
+        );
 
         $this->app->instance(OutputProcessorCollection::class, $outputProcessorCollection);
 

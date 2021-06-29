@@ -8,20 +8,21 @@ class OutputConfiguration
      * @var string
      */
     private string $outputType;
+
     /**
-     * @var array|false|string[]
+     * @var array
      */
     private array $outputFilters;
 
     /**
      * OutputConfiguration constructor.
      * @param string $outputType
-     * @param string|null $outputFilters
+     * @param array $outputFilters
      */
-    public function __construct(string $outputType, ?string $outputFilters)
+    public function __construct(string $outputType, array $outputFilters)
     {
         $this->outputType = $outputType;
-        $this->outputFilters = $outputFilters ? explode(',', $outputFilters) : [];
+        $this->outputFilters = $outputFilters;
     }
 
     /**

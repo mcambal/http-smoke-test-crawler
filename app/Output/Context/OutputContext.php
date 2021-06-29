@@ -6,6 +6,7 @@ use App\Collection\OutputFilterCollection;
 use App\Collection\OutputProcessorCollection;
 use App\Entity\Simple\CrawlData;
 use App\Output\Filter\OutputFilter;
+use App\Output\Processor\OutputProcessor;
 
 class OutputContext
 {
@@ -32,7 +33,8 @@ class OutputContext
      * @param OutputProcessorCollection $outputProcessors
      * @param OutputFilterCollection $outputFilters
      */
-    public function __construct(OutputProcessorCollection $outputProcessors, OutputFilterCollection $outputFilters) {
+    public function __construct(OutputProcessorCollection $outputProcessors, OutputFilterCollection $outputFilters)
+    {
         $this->outputStrategies = $outputProcessors;
         $this->outputFilters = $outputFilters;
     }
@@ -52,7 +54,7 @@ class OutputContext
      */
     public function setOutputFilterStrategy(array $filters): void
     {
-        foreach($filters as $filterName) {
+        foreach ($filters as $filterName) {
             $this->selectedOutputFilters[] = $this->outputFilters->get($filterName);
         }
     }
@@ -63,7 +65,7 @@ class OutputContext
     public function write(CrawlData $crawlData): void
     {
         foreach ($this->selectedOutputProcessors as $outputProcessor) {
-            if($this->shouldProcessData($crawlData)) {
+            if ($this->shouldProcessData($crawlData, $outputProcessor)) {
                 $outputProcessor->write($crawlData);
             }
         }
@@ -71,17 +73,18 @@ class OutputContext
 
     /**
      * @param CrawlData $crawlData
+     * @param OutputProcessor $outputProcessor
      * @return bool
      */
-    private function shouldProcessData(CrawlData $crawlData): bool {
-
-        if(empty($this->selectedOutputFilters)) {
+    private function shouldProcessData(CrawlData $crawlData, OutputProcessor $outputProcessor): bool
+    {
+        if (empty($this->selectedOutputFilters)) {
             return true;
         }
 
         /** @var OutputFilter $outputFilter */
-        foreach($this->selectedOutputFilters as $outputFilter) {
-            if(false === $outputFilter->shouldBeProcessed($crawlData)) {
+        foreach ($this->selectedOutputFilters as $outputFilter) {
+            if (false === $outputFilter->shouldBeProcessed($crawlData) && $outputFilter->supportsProcessor($outputProcessor)) {
                 return false;
             }
         }

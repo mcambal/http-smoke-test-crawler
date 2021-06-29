@@ -12,7 +12,8 @@
         "fideloper/proxy": "^4.0",
         "laravel/framework": "^6.0",
         "laravel/tinker": "^1.0",
-        "spatie/crawler": "~v4"
+        "spatie/crawler": "~v4",
+        "sendgrid/sendgrid": "~v7.4.0"
     },
     "require-dev": {
         "filp/whoops": "^2.0",

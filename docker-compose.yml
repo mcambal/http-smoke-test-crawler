@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  application:
+    build:
+      context: .
+      args:
+        BUILD_ENV: local
+    container_name: http-smoke-test-crawler
+    working_dir: /var/www/http-smoke-test-crawler
+    env_file:
+      - .env
+    volumes:
+      - .:/var/www/http-smoke-test-crawler
+  composer:
+    image: composer:latest
+    container_name: http-smoke-test-crawler-composer
