@@ -1,9 +1,27 @@
-# Command options
+# Installation
 
-```php
+1. Install composer dependencies (if you have composer installed)
+```
+composer install --ignore-platform-reqs 
+```
+or (if you don't have composer installed)
+```
+docker-compose run composer install --ignore-platform-reqs 
+```
+2. Copy .env.example to .env
+```
+cp .env.example .env
+```
+# Run application
+```
+docker-compose run application bash
 php artisan run:smoke-test <url> <options>
 ```
-
+or
+```
+docker-compose run application php artisan run:smoke-test <url> <options>
+```
+# Command options
 |Option|Values|
 |---|---|
 |--output| Possible values are **stdout** or **file**. Default is **stdout**|
@@ -19,11 +37,11 @@ php artisan run:smoke-test <url> <options>
 Example commands:
 ```php
 # Prints all crawled urls to stdout
-php artisan run:smoke-test https://datasecurityguide.eset.com
+php artisan run:smoke-test https://example.com
 # Prints all crawled urls to log file
-php artisan run:smoke-test https://datasecurityguide.eset.com --output=file
+php artisan run:smoke-test https://example.com --output=file
 # Prints all crawled urls to stdout and override user-agent string
-php artisan run:smoke-test https://datasecurityguide.eset.com --userAgent="SpamBot 1.0"
+php artisan run:smoke-test https://example.com --userAgent="MyBot 1.0"
 # Prints only invalid requests to stdout
-php artisan run:smoke-test https://datasecurityguide.eset.com --filters=InvalidStatusCodes,OnlyMyDomains
+php artisan run:smoke-test https://example.com --filters=30x,40x,50x
 ```
