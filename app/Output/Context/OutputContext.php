@@ -2,10 +2,12 @@
 
 namespace App\Output\Context;
 
+use App\Collection\FileCollection;
 use App\Collection\OutputFilterCollection;
 use App\Collection\OutputProcessorCollection;
 use App\Entity\Simple\CrawlData;
 use App\Output\Filter\OutputFilter;
+use App\Output\Processor\FileOutputProcessor;
 use App\Output\Processor\OutputProcessor;
 
 class OutputContext
@@ -46,6 +48,22 @@ class OutputContext
     public function setOutputTypeStrategy(string $type): void
     {
         $this->selectedOutputProcessors = $this->outputStrategies->getByType($type);
+    }
+
+    /**
+     * @return FileCollection
+     */
+    public function getLogFiles(): FileCollection
+    {
+        $fileCollection = new FileCollection();
+        /** @var FileOutputProcessor $outputProcessor */
+        foreach ($this->selectedOutputProcessors as $outputProcessor) {
+            if ($outputProcessor instanceof FileOutputProcessor) {
+                $fileCollection->add($outputProcessor->getFilePath());
+            }
+        }
+
+        return $fileCollection;
     }
 
     /**

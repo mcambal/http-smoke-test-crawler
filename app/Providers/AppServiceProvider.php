@@ -8,8 +8,8 @@ use App\Contract\Mailer;
 use App\Illuminate\Adapter\MailerAdapter;
 use App\Output\Filter\OnlyMyDomainsFilter;
 use App\Output\Formatter\CsvFormatter;
-use App\Output\Processor\Generator\BasicFileNameGenerator;
-use App\Output\Processor\Generator\FileNameGenerator;
+use App\Generator\BasicFileNameGenerator;
+use App\Generator\FileNameGenerator;
 use App\Output\Processor\DotProcessor;
 use App\Output\Filter\StatusCodeFilter;
 use App\Output\Formatter\LogFormatter;
@@ -44,40 +44,34 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(OutputFormatter::class, LogFormatter::class);
         $this->app->bind(FileNameGenerator::class, BasicFileNameGenerator::class);
-
-        /*$smtpTransport = new \Swift_SmtpTransport(config('mail.host'), config('mail.port'), config('mail.encryption'));
-        $smtpTransport->setUsername(config('mail.username'));
-        $smtpTransport->setPassword(config('mail.password'));
-
-        $this->app->instance(\Swift_Transport::class, $smtpTransport);
-
-        $mailer = $this->app->make(\Illuminate\Mail\Mailer::class, ['swift' => $this->app->make(\Swift_Mailer::class)]);
-
-        $this->app->instance(MailerAdapter::class, $this->app->make(MailerAdapter::class, ['mailer' => $mailer]));
-*/
         $this->app->bind(Mailer::class, MailerAdapter::class);
 
-        $this->app->instance(BasicFileNameGenerator::class,
-            $this->app->make(BasicFileNameGenerator::class,
-                [
-                    'directoryPath' => './storage/logs',
-                    'baseName' => 'urls',
-                    'fileExtension' => 'log'
+        $outputFilterCollection = new OutputFilterCollection();
+        $outputFilterCollection->add('30x',
+            $this->app->make(StatusCodeFilter::class, [
+                    'expectedStatusCodes' => [301,302,307,308],
+                    'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]
                 ]
             )
         );
-
-        $outputFilterCollection = new OutputFilterCollection();
-        $outputFilterCollection->add('InvalidStatusCodes',
+        $outputFilterCollection->add('40x',
             $this->app->make(StatusCodeFilter::class, [
-                'expectedStatusCodes' => [301,302,307,308,404,403,500,502,503,504],
+                'expectedStatusCodes' => [403,404,405],
                 'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]
                 ]
             )
         );
+        $outputFilterCollection->add('50x',
+            $this->app->make(StatusCodeFilter::class, [
+                    'expectedStatusCodes' => [500,502,503,504],
+                    'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]
+                ]
+            )
+        );
+
         $outputFilterCollection->add('OnlyMyDomains',
             $this->app->make(OnlyMyDomainsFilter::class, [
-                'expectedDomains' => ['[a-z]+\.eset\.com'],
+                'expectedDomains' => ['[a-z]+\.example\.com'],
                 'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]
                 ]
             )
@@ -88,13 +82,22 @@ class AppServiceProvider extends ServiceProvider
         $outputProcessorCollection = new OutputProcessorCollection();
         $outputProcessorCollection->add('stdout', $this->app->make(StdoutProcessor::class));
         $outputProcessorCollection->add('logFile', $this->app->make(DotProcessor::class));
-        $outputProcessorCollection->add('logFile', $this->app->make(LogFileProcessor::class));
+        $outputProcessorCollection->add('logFile', $this->app->make(LogFileProcessor::class,
+                [
+                    'nameGenerator' => $this->app->make(BasicFileNameGenerator::class, [
+                        'directoryPath' => './storage/logs',
+                        'baseName' => 'crawled-urls',
+                        'fileExtension' => 'log'
+                    ]),
+                ]
+            )
+        );
         $outputProcessorCollection->add('csvFile', $this->app->make(DotProcessor::class));
         $outputProcessorCollection->add('csvFile', $this->app->make(LogFileProcessor::class,
                 [
                     'nameGenerator' => $this->app->make(BasicFileNameGenerator::class, [
                         'directoryPath' => './storage/logs',
-                        'baseName' => 'urls',
+                        'baseName' => 'crawled-urls',
                         'fileExtension' => 'csv'
                     ]),
                     'outputFormatter' => $this->app->make(CsvFormatter::class)

@@ -2,26 +2,62 @@
 
 namespace App\Illuminate\Adapter;
 
+use App\Entity\Simple\TemplateData;
 use Illuminate\Mail\Mailer;
 
 class MailerAdapter implements \App\Contract\Mailer
 {
+    /**
+     * @var string
+     */
     private string $from;
+    /**
+     * @var array
+     */
     private array $to = [];
+    /**
+     * @var array
+     */
     private array $cc = [];
+    /**
+     * @var array
+     */
     private array $bcc = [];
+    /**
+     * @var string
+     */
     private string $subject;
+    /**
+     * @var string
+     */
     private string $templateName;
+    /**
+     * @var array
+     */
     private array $templateData;
+    /**
+     * @var array
+     */
     private array $attachments = [];
 
+    /**
+     * @var Mailer
+     */
     private Mailer $mailer;
 
+    /**
+     * MailerAdapter constructor.
+     * @param Mailer $mailer
+     */
     public function __construct(Mailer $mailer)
     {
         $this->mailer = $mailer;
     }
 
+    /**
+     * @param string $from
+     * @return $this
+     */
     public function setFrom(string $from): self
     {
         $this->from = $from;
@@ -29,6 +65,10 @@ class MailerAdapter implements \App\Contract\Mailer
         return $this;
     }
 
+    /**
+     * @param array $users
+     * @return $this
+     */
     public function setTo(array $users): self
     {
         $this->to = $users;
@@ -36,6 +76,10 @@ class MailerAdapter implements \App\Contract\Mailer
         return $this;
     }
 
+    /**
+     * @param array $users
+     * @return $this
+     */
     public function setCc(array $users): self
     {
         $this->cc = $users;
@@ -43,6 +87,10 @@ class MailerAdapter implements \App\Contract\Mailer
         return $this;
     }
 
+    /**
+     * @param array $users
+     * @return $this
+     */
     public function setBcc(array $users): self
     {
         $this->bcc = $users;
@@ -50,6 +98,10 @@ class MailerAdapter implements \App\Contract\Mailer
         return $this;
     }
 
+    /**
+     * @param string $subject
+     * @return $this
+     */
     public function setSubject(string $subject): self
     {
         $this->subject = $subject;
@@ -57,14 +109,22 @@ class MailerAdapter implements \App\Contract\Mailer
         return $this;
     }
 
-    public function setBodyTemplate(string $templateName, array $templateData): self
+    /**
+     * @param TemplateData $templateData
+     * @return $this
+     */
+    public function setBodyTemplate(TemplateData $templateData): self
     {
-        $this->templateName = $templateName;
-        $this->templateData = $templateData;
+        $this->templateName = $templateData->getName();
+        $this->templateData = $templateData->getData();
 
         return $this;
     }
 
+    /**
+     * @param array $attachmentFiles
+     * @return $this
+     */
     public function setAttachments(array $attachmentFiles): self
     {
         $this->attachments = $attachmentFiles;
@@ -72,6 +132,9 @@ class MailerAdapter implements \App\Contract\Mailer
         return $this;
     }
 
+    /**
+     *
+     */
     public function sendHtml(): void
     {
         /** @var \Swift_Message $message */
@@ -83,10 +146,18 @@ class MailerAdapter implements \App\Contract\Mailer
         $this->send($message);
     }
 
+    /**
+     * @param \Swift_Message $message
+     */
     private function send(\Swift_Message $message): void
     {
-        $message->setFrom($this->from);
-        $message->setSubject($this->subject);
+        if(isset($this->from)) {
+            $message->setFrom($this->from);
+        }
+
+        if(isset($this->subject)) {
+            $message->setSubject($this->subject);
+        }
 
         foreach($this->to as $to) {
             $message->addTo($to);

@@ -5,10 +5,13 @@ namespace App\Output\Processor;
 use App\Entity\Simple\CrawlData;
 use App\Exception\UnableToStoreLogDataException;
 use App\Output\Formatter\OutputFormatter;
-use App\Output\Processor\Generator\FileNameGenerator;
+use App\Generator\FileNameGenerator;
 
-class LogFileProcessor implements OutputProcessor
+class LogFileProcessor implements OutputProcessor, FileOutputProcessor
 {
+    /**
+     * @var FileNameGenerator
+     */
     private FileNameGenerator $nameGenerator;
     /**
      * @var OutputFormatter
@@ -33,7 +36,7 @@ class LogFileProcessor implements OutputProcessor
     public function write(CrawlData $crawlData): void
     {
         if (!file_put_contents(
-            $this->nameGenerator->getDirectoryPath() . DIRECTORY_SEPARATOR . $this->nameGenerator->getFileName(),
+            $this->getFilePath(),
             $this->outputFormatter->format(
                 $crawlData->getTargetUrl(),
                 $crawlData->getSourceUrl(),
@@ -41,5 +44,13 @@ class LogFileProcessor implements OutputProcessor
             ), FILE_APPEND)) {
             throw new UnableToStoreLogDataException($this->filePath);
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function getFilePath(): string
+    {
+        return $this->nameGenerator->getDirectoryPath() . DIRECTORY_SEPARATOR . $this->nameGenerator->getFileName();
     }
 }

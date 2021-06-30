@@ -2,12 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Collection\OutputFilterCollection;
-use App\Contract\Mailer;
 use App\Entity\Simple\CrawlerConfiguration;
 use App\Entity\Simple\OutputConfiguration;
+use App\Entity\Simple\TemplateData;
 use App\Handler\CrawlHandler;
-use App\Output\Processor\Generator\FileNameGenerator;
 use Illuminate\Console\Command;
 
 class RunHttpSmokeTestCommand extends Command
@@ -32,28 +30,14 @@ class RunHttpSmokeTestCommand extends Command
      * @var CrawlHandler
      */
     private CrawlHandler $crawlHandler;
-    /**
-     * @var OutputFilterCollection
-     */
-    private OutputFilterCollection $outputValidators;
-
-    private Mailer $mailer;
-
-    private FileNameGenerator $nameGenerator;
 
     /**
      * RunHttpSmokeTestCommand constructor.
      * @param CrawlHandler $crawlHandler
-     * @param OutputFilterCollection $outputValidators
-     * @param Mailer $mailer
-     * @param FileNameGenerator $nameGenerator
      */
-    public function __construct(CrawlHandler $crawlHandler, OutputFilterCollection $outputValidators, Mailer $mailer, FileNameGenerator $nameGenerator)
+    public function __construct(CrawlHandler $crawlHandler)
     {
         $this->crawlHandler = $crawlHandler;
-        $this->outputValidators = $outputValidators;
-        $this->mailer = $mailer;
-        $this->nameGenerator = $nameGenerator;
         parent::__construct();
     }
 
@@ -64,47 +48,47 @@ class RunHttpSmokeTestCommand extends Command
      */
     public function handle()
     {
-        $reportFilePath = $this->nameGenerator->getDirectoryPath() .
-            DIRECTORY_SEPARATOR .
-            $this->nameGenerator->getFileName();
-
-        if(file_exists($reportFilePath)) {
-            unlink($reportFilePath);
-        }
+        $baseUrl = $this->argument('url');
+        $userAgent = $this->option('userAgent');
+        $maxCrawlCount = $this->option('maxCrawlCount');
+        $maxCrawlDepth = $this->option('maxCrawlDepth');
+        $maxResponseSize = $this->option('maxResponseSize');
+        $filters = $this->option('filters');
 
         $this->crawlHandler
             ->crawl(
-                $this->argument('url'),
+                $baseUrl,
                 $this->createCrawlConfigurationFromOptions(
                     $this->option('delayBetweenRequests'),
                     (bool)$this->option('respectRobots'),
                     (bool)$this->option('rejectNoFollowLinks'),
-                    $this->option('userAgent'),
-                    $this->option('maxCrawlCount'),
-                    $this->option('maxCrawlDepth'),
-                    $this->option('maxResponseSize')
+                    $userAgent,
+                    $maxCrawlCount,
+                    $maxCrawlDepth,
+                    $maxResponseSize
                 ),
                 new OutputConfiguration(
                     $this->option('output'),
-                    $this->createTrimmedArray($this->option('filters'))
+                    $this->createTrimmedArray($filters)
                 )
             );
 
-        if(($emails = $this->option('emails')) !== null) {
-            $this->sendEmailReport($emails, $reportFilePath);
-        }
-    }
-
-    private function sendEmailReport(string $emails, string $attachmentFilePath): void
-    {
-        if(file_exists($attachmentFilePath)) {
-            $this->mailer
-                ->setFrom('noreply@eset.com')
-                ->setSubject('Crawling Report')
-                ->setBodyTemplate('Email/CrawlingReport', ['data' => ['projectUrl' => $this->argument('url')]])
-                ->setTo($this->createTrimmedArray($emails))
-                ->setAttachments([$attachmentFilePath])
-                ->sendHtml();
+        if (($emails = $this->option('emails')) !== null) {
+            $this->crawlHandler->sendEmailReport(
+                'crawler@eset.com',
+                'Http Smoke Test Report (' . $baseUrl . ')',
+                $this->createTrimmedArray($emails),
+                new TemplateData('Email/CrawlingReport', [
+                    'data' => [
+                        'baseUrl' => $baseUrl,
+                        'userAgent' => $userAgent ?? 'SmokeTestCrawler/1.0',
+                        'filters' => $filters ?? 'no filters used',
+                        'maxCrawlCount' => $maxCrawlCount ?? 'no limits',
+                        'maxCrawlDepth' => $maxCrawlDepth ?? 'no limits',
+                        'maxResponseSize' => $maxResponseSize ?? 'no limits'
+                    ]
+                ])
+            );
         }
     }
 

@@ -187,12 +187,9 @@
 <table bgcolor="#e8eef1" border="0" cellpadding="0" cellspacing="0" width="100%" height="100%">
     <tr>
         <td align="center" valign="top">
-
             <table cellspacing="0" cellpadding="0" border="0" align="center" width="640" class="main">
-
                 <tr>
                     <td>
-
                         <!-- MOD Header -->
                         <!-- / -->
                         <!-- MOD Text -->
@@ -214,21 +211,28 @@
                                                 <table width="100%" cellspacing="0" cellpadding="0" border="0"
                                                        style="font-family:'Segoe UI','Helvetica Neue',sans-serif;color:#424d56;">
                                                     <tr>
-                                                        <td style="text-align: center">
-                                                            <img width="400" src="https://www.esetscienceaward.sk/assets/img/email/Logo_EN_RGB_Horizontal_Symbol_Gradient_Pos_LongClaim@2x.png"
-                                                                 alt="ESET">
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-
                                                         <td align="left"
                                                             style="font-size:17px;mso-line-height-rule:exactly;line-height:24px;">
-                                                            <br><br>
-                                                            <h3 style="text-align: center;">
-                                                                {{__("Crawling Report for :url", ['url' => $data['projectUrl']])}}
-                                                            </h3>
-                                                            <br>
-                                                            <pre>{{__("We have just prepared a list of crawled links for your project. Take a look, please.")}}</pre>
+                                                            {{__("Hi there,")}}
+                                                            <br /><br />
+                                                            {{__("We have just crawled your project (:baseUrl). Please take a look into attachments and fix broken links.", ['baseUrl'=> $data['baseUrl']])}}
+                                                            <br /><br />
+                                                            We crawled your project with this configuration:
+                                                            <br /><br />
+                                                            <table border="1" cellspacing="0" cellpadding="2">
+                                                                <tr><td><b>Option</b></td><td><b>Value</b></td></tr>
+                                                                <tr><td>User Agent</td><td>{{$data['userAgent']}}</td></tr>
+                                                                <tr><td>Filters</td><td>{{$data['filters']}}</td></tr>
+                                                                <tr><td>Max. Crawling Count</td><td>{{$data['maxCrawlCount']}}</td></tr>
+                                                                <tr><td>Max. Crawling Depth</td><td>{{$data['maxCrawlDepth']}}</td></tr>
+                                                                <tr><td>Max. Response Size</td><td>{{$data['maxResponseSize']}}</td></tr>
+                                                            </table>
+                                                            <br /><br />
+                                                            Regards,
+                                                            <br /><br />
+                                                            Global Web Development Section
+                                                            <br />
+                                                            (Technical contact: wad@eset.com)
                                                         </td>
                                                     </tr>
                                                     <tr>

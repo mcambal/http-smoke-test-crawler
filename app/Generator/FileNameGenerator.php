@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Output\Processor\Generator;
+namespace App\Generator;
 
 interface FileNameGenerator
 {
