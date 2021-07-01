@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Collection\OutputFilterCollection;
 use App\Entity\Simple\CrawlerConfiguration;
 use App\Entity\Simple\OutputConfiguration;
 use App\Handler\CrawlHandler;
 use Illuminate\Console\Command;
+use Illuminate\View\Factory;
 
 class RunHttpSmokeTestCommand extends Command
 {
@@ -15,7 +15,9 @@ class RunHttpSmokeTestCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'run:smoke-test {url} {--output=stdout} {--respectRobots} {--delayBetweenRequests=} {--rejectNoFollowLinks} {--userAgent=} {--maxCrawlCount=} {--maxCrawlDepth=} {--maxResponseSize=} {--filters=}';
+    protected $signature = 'run:smoke-test {url} {--output=stdout} {--respectRobots} {--delayBetweenRequests=}
+    {--rejectNoFollowLinks} {--userAgent=} {--maxCrawlCount=} {--maxCrawlDepth=} {--maxResponseSize=} {--filters=}
+    {--emails=}';
 
     /**
      * The console command description.
@@ -24,13 +26,25 @@ class RunHttpSmokeTestCommand extends Command
      */
     protected $description = 'Find easily broken links in your website';
 
+    /**
+     * @var CrawlHandler
+     */
     private CrawlHandler $crawlHandler;
-    private OutputFilterCollection $outputValidators;
 
-    public function __construct(CrawlHandler $crawlHandler, OutputFilterCollection $outputValidators)
+    /**
+     * @var Factory
+     */
+    private Factory $templateRenderer;
+
+    /**
+     * RunHttpSmokeTestCommand constructor.
+     * @param CrawlHandler $crawlHandler
+     * @param Factory $templateRenderer
+     */
+    public function __construct(CrawlHandler $crawlHandler, Factory $templateRenderer)
     {
         $this->crawlHandler = $crawlHandler;
-        $this->outputValidators = $outputValidators;
+        $this->templateRenderer = $templateRenderer;
         parent::__construct();
     }
 
@@ -41,50 +55,123 @@ class RunHttpSmokeTestCommand extends Command
      */
     public function handle()
     {
-        $this->crawlHandler
-            ->crawl(
-                $this->argument('url'),
-                $this->createCrawlConfigurationFromOptions(),
-                new OutputConfiguration(
-                    $this->option('output'),
-                    $this->option('filters')
-                )
-            );
+        $baseUrl = $this->argument('url');
+        $filters = $this->option('filters');
+
+        $crawlConfiguration = $this->createCrawlConfigurationFromOptions(
+            $this->option('delayBetweenRequests'),
+            (bool)$this->option('respectRobots'),
+            (bool)$this->option('rejectNoFollowLinks'),
+            $this->option('userAgent'),
+            $this->option('maxCrawlCount'),
+            $this->option('maxCrawlDepth'),
+            $this->option('maxResponseSize')
+        );
+
+        $outputConfiguration = new OutputConfiguration(
+            $this->createTrimmedArray($this->option('output')),
+            $this->createTrimmedArray($filters)
+        );
+
+        $this->crawlHandler->crawl($baseUrl, $crawlConfiguration, $outputConfiguration);
+
+        if ($this->option('emails') !== null) {
+            $emailList = $this->createTrimmedArray($this->option('emails'));
+            $this->sendEmailReport($baseUrl, $emailList, $filters, $crawlConfiguration);
+        }
     }
 
-    private function createCrawlConfigurationFromOptions(): CrawlerConfiguration
+    /**
+     * @param string $baseUrl
+     * @param array $emails
+     * @param string $filters
+     * @param CrawlerConfiguration $crawlerConfiguration
+     */
+    private function sendEmailReport(string $baseUrl, array $emails, string $filters, CrawlerConfiguration $crawlerConfiguration)
+    {
+        $emailBody = $this->templateRenderer->make('Email/CrawlingReport', [
+            'data' => [
+                'baseUrl' => $baseUrl,
+                'userAgent' => $crawlerConfiguration->getUserAgent() ?? 'SmokeTestCrawler/1.0',
+                'filters' => $filters ?? 'no filters used',
+                'maxCrawlCount' => $crawlerConfiguration->getMaximumCrawlCount() ?? 'no limits',
+                'maxCrawlDepth' => $crawlerConfiguration->getMaximumCrawlDepth() ?? 'no limits',
+                'maxResponseSize' => $crawlerConfiguration->getMaximumResponseSize() ?? 'no limits'
+            ]
+        ])->render();
+
+        $this->crawlHandler->sendEmailReport(
+            'noreply@webcrawler.eset.com',
+            'Http Smoke Test Report (' . $baseUrl . ')',
+            $emails,
+            $emailBody
+        );
+    }
+
+    /**
+     * @param int|null $delayBetweenRequests
+     * @param bool $respectRobots
+     * @param bool $rejectNoFollowLinks
+     * @param string|null $userAgent
+     * @param int|null $maxCrawlCount
+     * @param int|null $maxCrawlDepth
+     * @param int|null $maxResponseSize
+     * @return CrawlerConfiguration
+     */
+    private function createCrawlConfigurationFromOptions(
+        ?int $delayBetweenRequests,
+        bool $respectRobots,
+        bool $rejectNoFollowLinks,
+        ?string $userAgent,
+        ?int $maxCrawlCount,
+        ?int $maxCrawlDepth,
+        ?int $maxResponseSize
+    ): CrawlerConfiguration
     {
         $crawlConfiguration = new CrawlerConfiguration();
 
-        $delayBetweenRequests = $this->option('delayBetweenRequests');
         if ($delayBetweenRequests !== null) {
             $crawlConfiguration->setDelayBetweenRequests($delayBetweenRequests);
         }
 
-        $crawlConfiguration->setRespectRobots((bool)$this->option('respectRobots'));
-        $crawlConfiguration->setRejectNoFollowLinks($this->option('rejectNoFollowLinks'));
+        $crawlConfiguration->setRespectRobots($respectRobots);
+        $crawlConfiguration->setRejectNoFollowLinks($rejectNoFollowLinks);
 
-
-        $userAgent = $this->option('userAgent');
         if (!empty($userAgent)) {
             $crawlConfiguration->setUserAgent($userAgent);
         }
 
-        $maxCrawlCount = $this->option('maxCrawlCount');
         if (!empty($maxCrawlCount)) {
             $crawlConfiguration->setMaximumCrawlCount($maxCrawlCount);
         }
 
-        $maxCrawlDepth = $this->option('maxCrawlDepth');
         if (!empty($maxCrawlDepth)) {
             $crawlConfiguration->setMaximumCrawlDepth($maxCrawlDepth);
         }
 
-        $maxResponseSize = $this->option('maxResponseSize');
         if (!empty($maxResponseSize)) {
             $crawlConfiguration->setMaximumResponseSize($maxResponseSize);
         }
 
         return $crawlConfiguration;
+    }
+
+    /**
+     * @param string|null $inputData
+     * @return array
+     */
+    private function createTrimmedArray(?string $inputData): array
+    {
+        if ($inputData === null) {
+            return [];
+        }
+
+        $arrayList = explode(',', $inputData);
+
+        array_walk($arrayList, function (&$value) {
+            $value = trim($value);
+        });
+
+        return $arrayList;
     }
 }

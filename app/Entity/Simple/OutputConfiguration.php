@@ -5,29 +5,30 @@ namespace App\Entity\Simple;
 class OutputConfiguration
 {
     /**
-     * @var string
+     * @var array
      */
-    private string $outputType;
+    private array $outputType;
+
     /**
-     * @var array|false|string[]
+     * @var array
      */
     private array $outputFilters;
 
     /**
      * OutputConfiguration constructor.
-     * @param string $outputType
-     * @param string|null $outputFilters
+     * @param array $outputType
+     * @param array $outputFilters
      */
-    public function __construct(string $outputType, ?string $outputFilters)
+    public function __construct(array $outputType, array $outputFilters)
     {
         $this->outputType = $outputType;
-        $this->outputFilters = $outputFilters ? explode(',', $outputFilters) : [];
+        $this->outputFilters = $outputFilters;
     }
 
     /**
-     * @return string
+     * @return array
      */
-    public function getOutputType(): string
+    public function getOutputProcessors(): array
     {
         return $this->outputType;
     }

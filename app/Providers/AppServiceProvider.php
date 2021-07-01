@@ -4,15 +4,17 @@ namespace App\Providers;
 
 use App\Collection\OutputFilterCollection;
 use App\Collection\OutputProcessorCollection;
-use App\Output\Filter\OnlyMyDomainsFilter;
-use App\Output\Processor\DotProcessor;
+use App\Contract\Mailer;
+use App\Contract\WebCrawler;
+use App\Generator\BasicFileNameGenerator;
+use App\Illuminate\Adapter\MailerAdapter;
 use App\Output\Filter\StatusCodeFilter;
+use App\Output\Formatter\CsvFormatter;
 use App\Output\Formatter\LogFormatter;
-use App\Output\Formatter\OutputFormatter;
+use App\Output\Processor\DotProcessor;
 use App\Output\Processor\LogFileProcessor;
 use App\Output\Processor\StdoutProcessor;
 use App\Spatie\Adapter\SpatieCrawlerAdapter;
-use App\Contract\WebCrawler;
 use App\Spatie\Observer\RecordWriterObserver;
 use GuzzleHttp\Client;
 use Illuminate\Support\ServiceProvider;
@@ -37,34 +39,109 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->app->bind(OutputFormatter::class, LogFormatter::class);
+        $this->registerMailer();
+        $this->registerOutputFilters();
+        $this->registerOutputProcessors();
+        $this->registerCrawler();
+    }
 
+    /**
+     *
+     */
+    private function registerMailer(): void
+    {
+        $this->app->bind(Mailer::class, MailerAdapter::class);
+
+        $smtpTransport = new \Swift_SmtpTransport(config('mail.host'), config('mail.port'), config('mail.encryption'));
+        $smtpTransport->setUsername(config('mail.username'));
+        $smtpTransport->setPassword(config('mail.password'));
+
+        $this->app->instance(\Swift_Transport::class, $smtpTransport);
+    }
+
+    /**
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    private function registerOutputFilters(): void
+    {
         $outputFilterCollection = new OutputFilterCollection();
-        $outputFilterCollection->add('InvalidStatusCodes',
+        $outputFilterCollection->add('30x',
             $this->app->make(StatusCodeFilter::class, [
-                'expectedStatusCodes' => [301,302,307,308,404,403,500,502,503,504],
-                'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]
+                    'expectedStatusCodes' => [301, 302, 307, 308],
+                    'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]
                 ]
             )
         );
+        $outputFilterCollection->add('40x',
+            $this->app->make(StatusCodeFilter::class, [
+                    'expectedStatusCodes' => [403, 404, 405],
+                    'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]
+                ]
+            )
+        );
+        $outputFilterCollection->add('50x',
+            $this->app->make(StatusCodeFilter::class, [
+                    'expectedStatusCodes' => [500, 502, 503, 504],
+                    'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]
+                ]
+            )
+        );
+        /*
         $outputFilterCollection->add('OnlyMyDomains',
             $this->app->make(OnlyMyDomainsFilter::class, [
-                'expectedDomains' => ['[a-z]+\.eset\.com'],
+                'expectedDomains' => ['[a-z]+\.example\.com'],
                 'supportedProcessors' => [StdoutProcessor::class, LogFileProcessor::class]
                 ]
             )
-        );
+        );*/
 
         $this->app->instance(OutputFilterCollection::class, $outputFilterCollection);
+    }
 
-        $datetime = new \DateTime();
+    /**
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    private function registerOutputProcessors(): void
+    {
         $outputProcessorCollection = new OutputProcessorCollection();
-        $outputProcessorCollection->add('stdout', $this->app->make(StdoutProcessor::class));
-        $outputProcessorCollection->add('file', $this->app->make(DotProcessor::class));
-        $outputProcessorCollection->add('file', $this->app->make(LogFileProcessor::class, ['filePath' => './storage/logs/urls' . $datetime->format('-Y-m-d_H:00:00') . '.log']));
+        $outputProcessorCollection->add('stdout', $this->app->make(StdoutProcessor::class, [
+            'outputFormatter' => $this->app->make(LogFormatter::class)
+        ]));
+        $outputProcessorCollection->add('dot', $this->app->make(DotProcessor::class));
+        $outputProcessorCollection->add('log', $this->app->make(LogFileProcessor::class,
+            [
+                'nameGenerator' => $this->app->make(BasicFileNameGenerator::class,
+                    [
+                        'directoryPath' => './storage/logs',
+                        'baseName' => 'crawled-urls',
+                        'fileExtension' => 'log'
+                    ]
+                ),
+                'outputFormatter' => $this->app->make(LogFormatter::class)
+            ])
+        );
+
+        $outputProcessorCollection->add('csv', $this->app->make(LogFileProcessor::class,
+            [
+                'nameGenerator' => $this->app->make(BasicFileNameGenerator::class,
+                    [
+                        'directoryPath' => './storage/logs',
+                        'baseName' => 'crawled-urls',
+                        'fileExtension' => 'csv'
+                    ]
+                ),
+                'outputFormatter' => $this->app->make(CsvFormatter::class)
+            ])
+        );
 
         $this->app->instance(OutputProcessorCollection::class, $outputProcessorCollection);
+    }
 
+    /**
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    private function registerCrawler(): void
+    {
         $crawler = new Crawler(new Client());
         $crawler->addCrawlObserver($this->app->make(RecordWriterObserver::class));
         $this->app->instance(Crawler::class, $crawler);
