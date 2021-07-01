@@ -1,6 +1,10 @@
 # Installation
 
-1. Install composer dependencies (if you have composer installed)
+1. Copy .env.example to .env
+```
+cp .env.example .env
+```
+2. Install composer dependencies (if you have composer installed)
 ```
 composer install --ignore-platform-reqs 
 ```
@@ -8,10 +12,7 @@ or (if you don't have composer installed)
 ```
 docker-compose run composer install --ignore-platform-reqs 
 ```
-2. Copy .env.example to .env
-```
-cp .env.example .env
-```
+
 # Run application
 ```
 docker-compose run application bash
