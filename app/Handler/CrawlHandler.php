@@ -47,7 +47,7 @@ class CrawlHandler
      */
     public function crawl(string $baseUrl, CrawlerConfiguration $crawlerConfiguration, OutputConfiguration $outputConfiguration): void
     {
-        $this->outputContext->setOutputTypeStrategy($outputConfiguration->getOutputType());
+        $this->outputContext->setOutputProcessorStrategy($outputConfiguration->getOutputProcessors());
         $this->outputContext->setOutputFilterStrategy($outputConfiguration->getOutputFilters());
 
         $this->resetLogs();

@@ -69,25 +69,25 @@ class RunHttpSmokeTestCommand extends Command
         );
 
         $outputConfiguration = new OutputConfiguration(
-            $this->option('output'),
+            $this->createTrimmedArray($this->option('output')),
             $this->createTrimmedArray($filters)
         );
 
         $this->crawlHandler->crawl($baseUrl, $crawlConfiguration, $outputConfiguration);
 
         if ($this->option('emails') !== null) {
-            $emails = $this->createTrimmedArray($this->option('emails'));
-            $this->sendEmailReport($baseUrl, $emails, $filters, $crawlConfiguration);
+            $emailList = $this->createTrimmedArray($this->option('emails'));
+            $this->sendEmailReport($baseUrl, $emailList, $filters, $crawlConfiguration);
         }
     }
 
     /**
      * @param string $baseUrl
      * @param array $emails
-     * @param array $filters
+     * @param string $filters
      * @param CrawlerConfiguration $crawlerConfiguration
      */
-    private function sendEmailReport(string $baseUrl, array $emails, array $filters, CrawlerConfiguration $crawlerConfiguration)
+    private function sendEmailReport(string $baseUrl, array $emails, string $filters, CrawlerConfiguration $crawlerConfiguration)
     {
         $emailBody = $this->templateRenderer->make('Email/CrawlingReport', [
             'data' => [

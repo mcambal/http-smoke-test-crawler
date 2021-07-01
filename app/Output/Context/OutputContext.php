@@ -42,12 +42,14 @@ class OutputContext
     }
 
     /**
-     * @param string $type
+     * @param array $processors
      * @throws \App\Exception\UnableToFindOutputTypeException
      */
-    public function setOutputTypeStrategy(string $type): void
+    public function setOutputProcessorStrategy(array $processors): void
     {
-        $this->selectedOutputProcessors = $this->outputStrategies->getByType($type);
+        foreach($processors as $processor) {
+            $this->selectedOutputProcessors[] = $this->outputStrategies->getByName($processor);
+        }
     }
 
     /**
@@ -102,7 +104,8 @@ class OutputContext
 
         /** @var OutputFilter $outputFilter */
         foreach ($this->selectedOutputFilters as $outputFilter) {
-            if (false === $outputFilter->shouldBeProcessed($crawlData) && $outputFilter->supportsProcessor($outputProcessor)) {
+            if (false === $outputFilter->shouldBeProcessed($crawlData)
+                && $outputFilter->supportsProcessor($outputProcessor)) {
                 return false;
             }
         }
