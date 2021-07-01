@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Illuminate\Adapter;
+namespace App\Swift\Adapter;
 
 use App\Contract\Mailer;
 
@@ -97,18 +97,6 @@ class MailerAdapter implements Mailer
     public function setSubject(string $subject): self
     {
         $this->subject = $subject;
-
-        return $this;
-    }
-
-    /**
-     * @param TemplateData $templateData
-     * @return $this
-     */
-    public function setBodyTemplate(TemplateData $templateData): self
-    {
-        $this->templateName = $templateData->getName();
-        $this->templateData = $templateData->getData();
 
         return $this;
     }

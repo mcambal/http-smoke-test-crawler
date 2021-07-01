@@ -7,7 +7,7 @@ use App\Collection\OutputProcessorCollection;
 use App\Contract\Mailer;
 use App\Contract\WebCrawler;
 use App\Generator\BasicFileNameGenerator;
-use App\Illuminate\Adapter\MailerAdapter;
+use App\Swift\Adapter\MailerAdapter;
 use App\Output\Filter\StatusCodeFilter;
 use App\Output\Formatter\CsvFormatter;
 use App\Output\Formatter\LogFormatter;
