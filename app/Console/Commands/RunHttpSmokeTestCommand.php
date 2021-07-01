@@ -4,9 +4,9 @@ namespace App\Console\Commands;
 
 use App\Entity\Simple\CrawlerConfiguration;
 use App\Entity\Simple\OutputConfiguration;
-use App\Entity\Simple\TemplateData;
 use App\Handler\CrawlHandler;
 use Illuminate\Console\Command;
+use Illuminate\View\Factory;
 
 class RunHttpSmokeTestCommand extends Command
 {
@@ -32,12 +32,19 @@ class RunHttpSmokeTestCommand extends Command
     private CrawlHandler $crawlHandler;
 
     /**
+     * @var Factory
+     */
+    private Factory $templateRenderer;
+
+    /**
      * RunHttpSmokeTestCommand constructor.
      * @param CrawlHandler $crawlHandler
+     * @param Factory $templateRenderer
      */
-    public function __construct(CrawlHandler $crawlHandler)
+    public function __construct(CrawlHandler $crawlHandler, Factory $templateRenderer)
     {
         $this->crawlHandler = $crawlHandler;
+        $this->templateRenderer = $templateRenderer;
         parent::__construct();
     }
 
@@ -49,47 +56,56 @@ class RunHttpSmokeTestCommand extends Command
     public function handle()
     {
         $baseUrl = $this->argument('url');
-        $userAgent = $this->option('userAgent');
-        $maxCrawlCount = $this->option('maxCrawlCount');
-        $maxCrawlDepth = $this->option('maxCrawlDepth');
-        $maxResponseSize = $this->option('maxResponseSize');
         $filters = $this->option('filters');
 
-        $this->crawlHandler
-            ->crawl(
-                $baseUrl,
-                $this->createCrawlConfigurationFromOptions(
-                    $this->option('delayBetweenRequests'),
-                    (bool)$this->option('respectRobots'),
-                    (bool)$this->option('rejectNoFollowLinks'),
-                    $userAgent,
-                    $maxCrawlCount,
-                    $maxCrawlDepth,
-                    $maxResponseSize
-                ),
-                new OutputConfiguration(
-                    $this->option('output'),
-                    $this->createTrimmedArray($filters)
-                )
-            );
+        $crawlConfiguration = $this->createCrawlConfigurationFromOptions(
+            $this->option('delayBetweenRequests'),
+            (bool)$this->option('respectRobots'),
+            (bool)$this->option('rejectNoFollowLinks'),
+            $this->option('userAgent'),
+            $this->option('maxCrawlCount'),
+            $this->option('maxCrawlDepth'),
+            $this->option('maxResponseSize')
+        );
 
-        if (($emails = $this->option('emails')) !== null) {
-            $this->crawlHandler->sendEmailReport(
-                'crawler@eset.com',
-                'Http Smoke Test Report (' . $baseUrl . ')',
-                $this->createTrimmedArray($emails),
-                new TemplateData('Email/CrawlingReport', [
-                    'data' => [
-                        'baseUrl' => $baseUrl,
-                        'userAgent' => $userAgent ?? 'SmokeTestCrawler/1.0',
-                        'filters' => $filters ?? 'no filters used',
-                        'maxCrawlCount' => $maxCrawlCount ?? 'no limits',
-                        'maxCrawlDepth' => $maxCrawlDepth ?? 'no limits',
-                        'maxResponseSize' => $maxResponseSize ?? 'no limits'
-                    ]
-                ])
-            );
+        $outputConfiguration = new OutputConfiguration(
+            $this->option('output'),
+            $this->createTrimmedArray($filters)
+        );
+
+        $this->crawlHandler->crawl($baseUrl, $crawlConfiguration, $outputConfiguration);
+
+        if ($this->option('emails') !== null) {
+            $emails = $this->createTrimmedArray($this->option('emails'));
+            $this->sendEmailReport($baseUrl, $emails, $filters, $crawlConfiguration);
         }
+    }
+
+    /**
+     * @param string $baseUrl
+     * @param array $emails
+     * @param array $filters
+     * @param CrawlerConfiguration $crawlerConfiguration
+     */
+    private function sendEmailReport(string $baseUrl, array $emails, array $filters, CrawlerConfiguration $crawlerConfiguration)
+    {
+        $emailBody = $this->templateRenderer->make('Email/CrawlingReport', [
+            'data' => [
+                'baseUrl' => $baseUrl,
+                'userAgent' => $crawlerConfiguration->getUserAgent() ?? 'SmokeTestCrawler/1.0',
+                'filters' => $filters ?? 'no filters used',
+                'maxCrawlCount' => $crawlerConfiguration->getMaximumCrawlCount() ?? 'no limits',
+                'maxCrawlDepth' => $crawlerConfiguration->getMaximumCrawlDepth() ?? 'no limits',
+                'maxResponseSize' => $crawlerConfiguration->getMaximumResponseSize() ?? 'no limits'
+            ]
+        ])->render();
+
+        $this->crawlHandler->sendEmailReport(
+            'noreply@webcrawler.eset.com',
+            'Http Smoke Test Report (' . $baseUrl . ')',
+            $emails,
+            $emailBody
+        );
     }
 
     /**

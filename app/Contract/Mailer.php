@@ -43,13 +43,7 @@ interface Mailer
     public function setAttachments(array $attachmentFiles):self;
 
     /**
-     * @param TemplateData $templateData
-     * @return $this
+     * @param string $body
      */
-    public function setBodyTemplate(TemplateData $templateData):self;
-
-    /**
-     *
-     */
-    public function sendHtml(): void;
+    public function sendHtml(string $body): void;
 }

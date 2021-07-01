@@ -7,7 +7,7 @@ class FileCollection
     /**
      * @var array
      */
-    private array $files;
+    private array $files = [];
 
     /**
      * @param string $filePath

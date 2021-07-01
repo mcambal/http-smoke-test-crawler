@@ -6,7 +6,6 @@ use App\Contract\Mailer;
 use App\Contract\WebCrawler;
 use App\Entity\Simple\CrawlerConfiguration;
 use App\Entity\Simple\OutputConfiguration;
-use App\Entity\Simple\TemplateData;
 use App\Output\Context\OutputContext;
 
 class CrawlHandler
@@ -63,19 +62,18 @@ class CrawlHandler
      * @param string $from
      * @param string $subject
      * @param array $emails
-     * @param TemplateData $templateData
+     * @param string $body
      */
-    public function sendEmailReport(string $from, string $subject, array $emails, TemplateData $templateData): void
+    public function sendEmailReport(string $from, string $subject, array $emails, string $body): void
     {
         $fileCollection = $this->outputContext->getLogFiles();
 
         $this->mailer
             ->setFrom($from)
             ->setSubject($subject)
-            ->setBodyTemplate($templateData)
             ->setTo($emails)
             ->setAttachments($fileCollection->getNotEmptyFiles())
-            ->sendHtml();
+            ->sendHtml($body);
     }
 
     /**

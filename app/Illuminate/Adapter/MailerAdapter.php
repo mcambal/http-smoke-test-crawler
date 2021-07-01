@@ -2,10 +2,9 @@
 
 namespace App\Illuminate\Adapter;
 
-use App\Entity\Simple\TemplateData;
-use Illuminate\Mail\Mailer;
+use App\Contract\Mailer;
 
-class MailerAdapter implements \App\Contract\Mailer
+class MailerAdapter implements Mailer
 {
     /**
      * @var string
@@ -27,29 +26,22 @@ class MailerAdapter implements \App\Contract\Mailer
      * @var string
      */
     private string $subject;
-    /**
-     * @var string
-     */
-    private string $templateName;
-    /**
-     * @var array
-     */
-    private array $templateData;
+
     /**
      * @var array
      */
     private array $attachments = [];
 
     /**
-     * @var Mailer
+     * @var \Swift_Mailer
      */
-    private Mailer $mailer;
+    private \Swift_Mailer $mailer;
 
     /**
      * MailerAdapter constructor.
-     * @param Mailer $mailer
+     * @param \Swift_Mailer $mailer
      */
-    public function __construct(Mailer $mailer)
+    public function __construct(\Swift_Mailer $mailer)
     {
         $this->mailer = $mailer;
     }
@@ -133,14 +125,14 @@ class MailerAdapter implements \App\Contract\Mailer
     }
 
     /**
-     *
+     * @param string $body
      */
-    public function sendHtml(): void
+    public function sendHtml(string $body): void
     {
         /** @var \Swift_Message $message */
-        $message = $this->mailer->getSwiftMailer()->createMessage();
-        $html = $this->mailer->render($this->templateName, $this->templateData);
-        $message->setBody($html);
+        $message = $this->mailer->createMessage();
+
+        $message->setBody($body);
         $message->setContentType('text/html');
 
         $this->send($message);
@@ -175,6 +167,6 @@ class MailerAdapter implements \App\Contract\Mailer
             $message->attach(\Swift_Attachment::fromPath($attachment));
         }
 
-        $this->mailer->getSwiftMailer()->send($message);
+        $this->mailer->send($message);
     }
 }
