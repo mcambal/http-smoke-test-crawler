@@ -5,13 +5,14 @@ namespace App\Output\Processor;
 use App\Entity\Simple\CrawlData;
 use App\Exception\UnableToStoreLogDataException;
 use App\Output\Formatter\OutputFormatter;
+use App\Generator\FileNameGenerator;
 
-class LogFileProcessor implements OutputProcessor
+class LogFileProcessor implements OutputProcessor, FileOutputProcessor
 {
     /**
-     * @var string
+     * @var FileNameGenerator
      */
-    private string $filePath;
+    private FileNameGenerator $nameGenerator;
     /**
      * @var OutputFormatter
      */
@@ -19,12 +20,12 @@ class LogFileProcessor implements OutputProcessor
 
     /**
      * LogFileStrategy constructor.
-     * @param string $filePath
+     * @param FileNameGenerator $nameGenerator
      * @param OutputFormatter $outputFormatter
      */
-    public function __construct(string $filePath, OutputFormatter $outputFormatter)
+    public function __construct(FileNameGenerator $nameGenerator, OutputFormatter $outputFormatter)
     {
-        $this->filePath = $filePath;
+        $this->nameGenerator = $nameGenerator;
         $this->outputFormatter = $outputFormatter;
     }
 
@@ -35,7 +36,7 @@ class LogFileProcessor implements OutputProcessor
     public function write(CrawlData $crawlData): void
     {
         if (!file_put_contents(
-            $this->filePath,
+            $this->getFilePath(),
             $this->outputFormatter->format(
                 $crawlData->getTargetUrl(),
                 $crawlData->getSourceUrl(),
@@ -43,5 +44,13 @@ class LogFileProcessor implements OutputProcessor
             ), FILE_APPEND)) {
             throw new UnableToStoreLogDataException($this->filePath);
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function getFilePath(): string
+    {
+        return $this->nameGenerator->getDirectoryPath() . DIRECTORY_SEPARATOR . $this->nameGenerator->getFileName();
     }
 }

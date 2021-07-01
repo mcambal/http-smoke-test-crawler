@@ -13,25 +13,25 @@ class OutputProcessorCollection
     private array $outputProcessors = [];
 
     /**
-     * @param string $type
+     * @param string $name
      * @param OutputProcessor $outputProcessor
      */
-    public function add(string $type, OutputProcessor $outputProcessor)
+    public function add(string $name, OutputProcessor $outputProcessor)
     {
-        $this->outputProcessors[$type][] = $outputProcessor;
+        $this->outputProcessors[$name] = $outputProcessor;
     }
 
     /**
-     * @param string $type
-     * @return array
+     * @param string $name
+     * @return OutputProcessor
      * @throws UnableToFindOutputTypeException
      */
-    public function getByType(string $type): array
+    public function getByName(string $name): OutputProcessor
     {
-        if (!isset($this->outputProcessors[$type])) {
-            throw new UnableToFindOutputTypeException($type);
+        if (!isset($this->outputProcessors[$name])) {
+            throw new UnableToFindOutputTypeException($name);
         }
 
-        return $this->outputProcessors[$type];
+        return $this->outputProcessors[$name];
     }
 }

@@ -7,6 +7,9 @@
         "laravel"
     ],
     "license": "MIT",
+    "platform": {
+        "php": "^7.4"
+    },
     "require": {
         "php": "^7.4",
         "fideloper/proxy": "^4.0",
