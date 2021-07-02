@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Collection;
 
-use App\Collection\FileCollection;
 use App\Collection\InputItemCollection;
 use PHPUnit\Framework\TestCase;
 
