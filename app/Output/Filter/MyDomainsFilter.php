@@ -5,7 +5,7 @@ namespace App\Output\Filter;
 use App\Entity\Simple\CrawlData;
 use App\Output\Processor\OutputProcessor;
 
-class OnlyMyDomainsFilter implements OutputFilter
+class MyDomainsFilter implements OutputFilter
 {
     /**
      * @var array
@@ -44,7 +44,7 @@ class OnlyMyDomainsFilter implements OutputFilter
     public function shouldBeProcessed(CrawlData $crawlData): bool
     {
         foreach ($this->expectedDomains as $domain) {
-            if (preg_match('/^http(s)?:\/\/' . $domain . '/', $crawlData->getTargetUrl())) {
+            if (preg_match('@^' . $domain . '@', $crawlData->getTargetUrl())) {
                 return true;
             }
         }

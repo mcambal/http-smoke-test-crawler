@@ -2,7 +2,7 @@
 
 namespace App\Exception;
 
-class UnableToFindOutputTypeException extends \Exception
+class UnableToFindOutputProcessorException extends \Exception
 {
     /**
      * UnableToFindOutputStrategyException constructor.

@@ -7,7 +7,7 @@ class OutputConfiguration
     /**
      * @var array
      */
-    private array $outputType;
+    private array $outputProcessors;
 
     /**
      * @var array
@@ -16,12 +16,12 @@ class OutputConfiguration
 
     /**
      * OutputConfiguration constructor.
-     * @param array $outputType
+     * @param array $outputProcessors
      * @param array $outputFilters
      */
-    public function __construct(array $outputType, array $outputFilters)
+    public function __construct(array $outputProcessors, array $outputFilters)
     {
-        $this->outputType = $outputType;
+        $this->outputProcessors = $outputProcessors;
         $this->outputFilters = $outputFilters;
     }
 
@@ -30,7 +30,7 @@ class OutputConfiguration
      */
     public function getOutputProcessors(): array
     {
-        return $this->outputType;
+        return $this->outputProcessors;
     }
 
     /**

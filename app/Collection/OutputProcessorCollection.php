@@ -2,7 +2,7 @@
 
 namespace App\Collection;
 
-use App\Exception\UnableToFindOutputTypeException;
+use App\Exception\UnableToFindOutputProcessorException;
 use App\Output\Processor\OutputProcessor;
 
 class OutputProcessorCollection
@@ -24,12 +24,12 @@ class OutputProcessorCollection
     /**
      * @param string $name
      * @return OutputProcessor
-     * @throws UnableToFindOutputTypeException
+     * @throws UnableToFindOutputProcessorException
      */
     public function getByName(string $name): OutputProcessor
     {
         if (!isset($this->outputProcessors[$name])) {
-            throw new UnableToFindOutputTypeException($name);
+            throw new UnableToFindOutputProcessorException($name);
         }
 
         return $this->outputProcessors[$name];

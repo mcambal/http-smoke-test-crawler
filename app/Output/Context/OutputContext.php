@@ -43,7 +43,7 @@ class OutputContext
 
     /**
      * @param array $processors
-     * @throws \App\Exception\UnableToFindOutputTypeException
+     * @throws \App\Exception\UnableToFindOutputProcessorException
      */
     public function setOutputProcessorStrategy(array $processors): void
     {

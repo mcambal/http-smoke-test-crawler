@@ -42,7 +42,7 @@ class CrawlHandler
      * @param string $baseUrl
      * @param CrawlerConfiguration $crawlerConfiguration
      * @param OutputConfiguration $outputConfiguration
-     * @throws \App\Exception\UnableToFindOutputTypeException
+     * @throws \App\Exception\UnableToFindOutputProcessorException
      * @throws \App\Exception\UnableToFindOutputFilterException
      */
     public function crawl(string $baseUrl, CrawlerConfiguration $crawlerConfiguration, OutputConfiguration $outputConfiguration): void
