@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Collection\InputItemCollection;
 use App\Entity\Simple\CrawlerConfiguration;
 use App\Entity\Simple\OutputConfiguration;
 use App\Handler\CrawlHandler;
@@ -69,15 +70,15 @@ class RunHttpSmokeTestCommand extends Command
         );
 
         $outputConfiguration = new OutputConfiguration(
-            $this->createTrimmedArray($this->option('output')),
-            $this->createTrimmedArray($filters)
+            new InputItemCollection($this->option('output')),
+            new InputItemCollection($filters)
         );
 
         $this->crawlHandler->crawl($baseUrl, $crawlConfiguration, $outputConfiguration);
 
         if ($this->option('emails') !== null) {
-            $emailList = $this->createTrimmedArray($this->option('emails'));
-            $this->sendEmailReport($baseUrl, $emailList, $filters, $crawlConfiguration);
+            $emailCollection = new InputItemCollection($this->option('emails'));
+            $this->sendEmailReport($baseUrl, $emailCollection->all(), $filters, $crawlConfiguration);
         }
     }
 
@@ -101,7 +102,7 @@ class RunHttpSmokeTestCommand extends Command
         ])->render();
 
         $this->crawlHandler->sendEmailReport(
-            'noreply@webcrawler.eset.com',
+            'noreply@example',
             'Http Smoke Test Report (' . $baseUrl . ')',
             $emails,
             $emailBody
@@ -154,24 +155,5 @@ class RunHttpSmokeTestCommand extends Command
         }
 
         return $crawlConfiguration;
-    }
-
-    /**
-     * @param string|null $inputData
-     * @return array
-     */
-    private function createTrimmedArray(?string $inputData): array
-    {
-        if ($inputData === null) {
-            return [];
-        }
-
-        $arrayList = explode(',', $inputData);
-
-        array_walk($arrayList, function (&$value) {
-            $value = trim($value);
-        });
-
-        return $arrayList;
     }
 }

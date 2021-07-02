@@ -2,24 +2,26 @@
 
 namespace App\Entity\Simple;
 
+use App\Collection\InputItemCollection;
+
 class OutputConfiguration
 {
     /**
-     * @var array
+     * @var InputItemCollection
      */
-    private array $outputProcessors;
+    private InputItemCollection $outputProcessors;
 
     /**
-     * @var array
+     * @var InputItemCollection
      */
-    private array $outputFilters;
+    private InputItemCollection $outputFilters;
 
     /**
      * OutputConfiguration constructor.
-     * @param array $outputProcessors
-     * @param array $outputFilters
+     * @param InputItemCollection $outputProcessors
+     * @param InputItemCollection $outputFilters
      */
-    public function __construct(array $outputProcessors, array $outputFilters)
+    public function __construct(InputItemCollection $outputProcessors, InputItemCollection $outputFilters)
     {
         $this->outputProcessors = $outputProcessors;
         $this->outputFilters = $outputFilters;
@@ -30,7 +32,7 @@ class OutputConfiguration
      */
     public function getOutputProcessors(): array
     {
-        return $this->outputProcessors;
+        return $this->outputProcessors->all();
     }
 
     /**
@@ -38,6 +40,6 @@ class OutputConfiguration
      */
     public function getOutputFilters(): array
     {
-        return $this->outputFilters;
+        return $this->outputFilters->all();
     }
 }
