@@ -85,10 +85,10 @@ class RunHttpSmokeTestCommand extends Command
     /**
      * @param string $baseUrl
      * @param array $emails
-     * @param string $filters
+     * @param string|null $filters
      * @param CrawlerConfiguration $crawlerConfiguration
      */
-    private function sendEmailReport(string $baseUrl, array $emails, string $filters, CrawlerConfiguration $crawlerConfiguration)
+    private function sendEmailReport(string $baseUrl, array $emails, ?string $filters, CrawlerConfiguration $crawlerConfiguration)
     {
         /** @todo Make this more flexible and move static values to configuration class */
         $emailBody = $this->templateRenderer->make('Email/CrawlingReport', [

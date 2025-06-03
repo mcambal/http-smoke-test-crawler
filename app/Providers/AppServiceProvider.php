@@ -7,7 +7,7 @@ use App\Collection\OutputProcessorCollection;
 use App\Contract\Mailer;
 use App\Contract\WebCrawler;
 use App\Generator\BasicFileNameGenerator;
-use App\Swift\Adapter\MailerAdapter;
+use App\Laravel\Adapter\MailerAdapter;
 use App\Output\Filter\StatusCodeFilter;
 use App\Output\Formatter\CsvFormatter;
 use App\Output\Formatter\LogFormatter;
@@ -51,12 +51,6 @@ class AppServiceProvider extends ServiceProvider
     private function registerMailer(): void
     {
         $this->app->bind(Mailer::class, MailerAdapter::class);
-
-        $smtpTransport = new \Swift_SmtpTransport(config('mail.host'), config('mail.port'), config('mail.encryption'));
-        $smtpTransport->setUsername(config('mail.username'));
-        $smtpTransport->setPassword(config('mail.password'));
-
-        $this->app->instance(\Swift_Transport::class, $smtpTransport);
     }
 
     /**

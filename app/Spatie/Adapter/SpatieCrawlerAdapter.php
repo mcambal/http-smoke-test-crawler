@@ -89,7 +89,7 @@ class SpatieCrawlerAdapter implements WebCrawler
     private function setMaximumCrawlCount(?int $maximumCrawlCount): void
     {
         if ($maximumCrawlCount !== null) {
-            $this->crawler->setMaximumCrawlCount($maximumCrawlCount);
+            $this->crawler->setTotalCrawlLimit($maximumCrawlCount);
         }
 
     }
