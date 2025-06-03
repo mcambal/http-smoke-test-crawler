@@ -8,7 +8,7 @@ use App\Spatie\Strategy\ObserverWithOutputContext;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
-use Spatie\Crawler\CrawlObserver;
+use Spatie\Crawler\CrawlObservers\CrawlObserver;
 
 class RecordWriterObserver extends CrawlObserver implements ObserverWithOutputContext
 {
@@ -29,8 +29,9 @@ class RecordWriterObserver extends CrawlObserver implements ObserverWithOutputCo
      * @param UriInterface $url
      * @param ResponseInterface $response
      * @param UriInterface|null $foundOnUrl
+     * @param string|null $linkText
      */
-    public function crawled(UriInterface $url, ResponseInterface $response, ?UriInterface $foundOnUrl = null)
+    public function crawled(UriInterface $url, ResponseInterface $response, ?UriInterface $foundOnUrl = null, ?string $linkText = null): void
     {
         $this->outputContext->write(new CrawlData($url, $response->getBody(), $foundOnUrl, $response->getStatusCode()));
     }
@@ -39,8 +40,9 @@ class RecordWriterObserver extends CrawlObserver implements ObserverWithOutputCo
      * @param UriInterface $url
      * @param RequestException $requestException
      * @param UriInterface|null $foundOnUrl
+     * @param string|null $linkText
      */
-    public function crawlFailed(UriInterface $url, RequestException $requestException, ?UriInterface $foundOnUrl = null)
+    public function crawlFailed(UriInterface $url, RequestException $requestException, ?UriInterface $foundOnUrl = null, ?string $linkText = null): void
     {
         $response = $requestException->getResponse();
 
